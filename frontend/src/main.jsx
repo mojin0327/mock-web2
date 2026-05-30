@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost" ? "http://localhost:8000" : "/backend");
 
 function App() {
   const [tasks, setTasks] = useState([]);
