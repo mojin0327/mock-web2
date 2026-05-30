@@ -13,19 +13,19 @@ React + FastAPI + SQLite task management app for learning full-stack web develop
 
 ```text
 mock web2/
-笏懌楳 backend/
-笏・ 笏懌楳 main.py
-笏・ 笏披楳 requirements.txt
-笏懌楳 frontend/
-笏・ 笏懌楳 index.html
-笏・ 笏懌楳 package.json
-笏・ 笏披楳 src/
-笏・    笏懌楳 main.jsx
-笏・    笏披楳 styles.css
-笏懌楳 .env.example
-笏懌楳 .gitignore
-笏懌楳 LICENSE
-笏披楳 README.md
+|-- backend/
+|   |-- main.py
+|   `-- requirements.txt
+|-- frontend/
+|   |-- index.html
+|   |-- package.json
+|   `-- src/
+|       |-- main.jsx
+|       `-- styles.css
+|-- .env.example
+|-- .gitignore
+|-- LICENSE
+`-- README.md
 ```
 
 ## Backend Setup
