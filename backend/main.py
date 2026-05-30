@@ -24,6 +24,8 @@ app.add_middleware(
 
 DEFAULT_DB_PATH = "/tmp/app.db" if os.getenv("VERCEL") else Path(__file__).with_name("app.db")
 DB_PATH = Path(os.getenv("DATABASE_PATH", DEFAULT_DB_PATH))
+if os.getenv("VERCEL") and not DB_PATH.is_absolute():
+    DB_PATH = Path("/tmp") / DB_PATH
 
 
 class MemoCreate(BaseModel):
@@ -42,6 +44,7 @@ class TaskUpdate(BaseModel):
 
 
 def get_connection():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
