@@ -115,10 +115,10 @@ FRONTEND_ORIGINS=https://your-frontend-domain.example
 ```
 
 4. Deploy `frontend/` to Vercel or another static frontend host.
-5. Set frontend environment variable:
+5. If frontend and backend are deployed as Vercel Services in one project, set frontend environment variable:
 
 ```text
-VITE_API_URL=https://your-backend-domain.example
+VITE_API_URL=/backend
 ```
 
 SQLite is fine for this learning project, but production apps usually use PostgreSQL or another managed database.
