@@ -94,6 +94,33 @@ DATABASE_PATH=app.db
 
 The app works without `.env` because local defaults are built in.
 
+
+## Deployment Notes
+
+Recommended beginner deployment path:
+
+1. Deploy `backend/` to Render, Railway, or another Python web service.
+2. Set the backend start command:
+
+```text
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+3. Set backend environment variables:
+
+```text
+DATABASE_PATH=app.db
+FRONTEND_ORIGINS=https://your-frontend-domain.example
+```
+
+4. Deploy `frontend/` to Vercel or another static frontend host.
+5. Set frontend environment variable:
+
+```text
+VITE_API_URL=https://your-backend-domain.example
+```
+
+SQLite is fine for this learning project, but production apps usually use PostgreSQL or another managed database.
 ## Git Notes
 
 These files are intentionally not committed:

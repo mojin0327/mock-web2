@@ -9,9 +9,11 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Mock Web2 API")
 
+frontend_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[origin.strip() for origin in frontend_origins if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
