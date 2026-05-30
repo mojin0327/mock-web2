@@ -22,7 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = Path(os.getenv("DATABASE_PATH", Path(__file__).with_name("app.db")))
+DEFAULT_DB_PATH = "/tmp/app.db" if os.getenv("VERCEL") else Path(__file__).with_name("app.db")
+DB_PATH = Path(os.getenv("DATABASE_PATH", DEFAULT_DB_PATH))
 
 
 class MemoCreate(BaseModel):

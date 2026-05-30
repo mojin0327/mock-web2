@@ -114,6 +114,14 @@ DATABASE_PATH=app.db
 FRONTEND_ORIGINS=https://your-frontend-domain.example
 ```
 
+On Vercel, use a writable temporary SQLite path if you keep SQLite:
+
+```text
+DATABASE_PATH=/tmp/app.db
+```
+
+This is only for demo deployments. Data stored in `/tmp` can disappear between function instances or redeploys.
+
 4. Deploy `frontend/` to Vercel or another static frontend host.
 5. If frontend and backend are deployed as Vercel Services in one project, set frontend environment variable:
 
