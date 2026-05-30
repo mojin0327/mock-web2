@@ -1,14 +1,40 @@
 # Mock Web2
 
-React + FastAPI + SQLite の学習用タスク管理アプリです。
+React + FastAPI + SQLite task management app for learning full-stack web development.
 
-## Backend
+## Stack
+
+- Frontend: React + Vite
+- Backend: FastAPI
+- Database: SQLite
+- Version control: Git + GitHub
+
+## Project Structure
+
+```text
+mock web2/
+笏懌楳 backend/
+笏・ 笏懌楳 main.py
+笏・ 笏披楳 requirements.txt
+笏懌楳 frontend/
+笏・ 笏懌楳 index.html
+笏・ 笏懌楳 package.json
+笏・ 笏披楳 src/
+笏・    笏懌楳 main.jsx
+笏・    笏披楳 styles.css
+笏懌楳 .env.example
+笏懌楳 .gitignore
+笏懌楳 LICENSE
+笏披楳 README.md
+```
+
+## Backend Setup
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install fastapi "uvicorn[standard]"
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
@@ -18,7 +44,15 @@ API docs:
 http://localhost:8000/docs
 ```
 
-## Frontend
+Health check:
+
+```text
+http://localhost:8000/health
+```
+
+## Frontend Setup
+
+Open a second terminal:
 
 ```powershell
 cd frontend
@@ -32,12 +66,43 @@ App:
 http://localhost:5173
 ```
 
-## What This App Does
+## API
 
-- `GET /tasks`: タスク一覧を取得
-- `POST /tasks`: タスクを作成
-- `GET /tasks/{id}`: タスク詳細を取得
-- `PATCH /tasks/{id}`: タスクを更新
-- `DELETE /tasks/{id}`: タスクを削除
+```text
+GET    /tasks       List tasks
+POST   /tasks       Create a task
+GET    /tasks/{id}  Get one task
+PATCH  /tasks/{id}  Update a task
+DELETE /tasks/{id}  Delete a task
+```
 
-SQLite の `backend/app.db` にデータを保存します。`app.db` はローカル実行時に作られるためGitには入れません。
+## Environment Variables
+
+Copy `.env.example` to `.env` when you start using real local configuration.
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Current example:
+
+```text
+BACKEND_PORT=8000
+FRONTEND_PORT=5173
+DATABASE_PATH=app.db
+```
+
+The app works without `.env` because local defaults are built in.
+
+## Git Notes
+
+These files are intentionally not committed:
+
+- `backend/.venv/`
+- `backend/app.db`
+- `backend/__pycache__/`
+- `frontend/node_modules/`
+- `frontend/dist/`
+- `.env`
+
+The SQLite database file is generated locally when the backend starts.

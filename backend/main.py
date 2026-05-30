@@ -1,4 +1,5 @@
-﻿import sqlite3
+import os
+import sqlite3
 from pathlib import Path
 from typing import Optional
 
@@ -16,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = Path(__file__).with_name("app.db")
+DB_PATH = Path(os.getenv("DATABASE_PATH", Path(__file__).with_name("app.db")))
 
 
 class MemoCreate(BaseModel):

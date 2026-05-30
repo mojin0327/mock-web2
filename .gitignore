@@ -18,3 +18,4 @@ frontend/.vite/
 Thumbs.db
 .vscode/
 .idea/
+.env
