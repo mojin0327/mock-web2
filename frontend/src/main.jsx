@@ -27,7 +27,7 @@ function App() {
       setError("");
       setTasks(await request("/tasks"));
     } catch (err) {
-      setError("Cannot connect to the backend. Check that FastAPI is running and VITE_API_URL is correct.");
+      setError("バックエンドに接続できません。FastAPIが動いているか、VITE_API_URLが正しいか確認してください。");
     }
   }
 
@@ -69,15 +69,15 @@ function App() {
     <main className="shell">
       <section className="hero">
         <p className="eyebrow">React + FastAPI + SQLite</p>
-        <h1>Task manager connected to a real API and database</h1>
-        <p className="lead">Create tasks with POST, read them with GET, update them with PATCH, and delete them with DELETE.</p>
+        <h1>画面からAPIとDBを操作するタスク管理</h1>
+        <p className="lead">POSTで作成、GETで表示、PATCHで完了切り替え、DELETEで削除します。</p>
       </section>
 
       <section className="workspace">
         <form className="task-form" onSubmit={createTask}>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
-          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
-          <button disabled={loading}>{loading ? "Saving" : "Add"}</button>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="タスク名" />
+          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="説明" />
+          <button disabled={loading}>{loading ? "保存中" : "追加"}</button>
         </form>
 
         {error && <p className="error">{error}</p>}
@@ -89,15 +89,15 @@ function App() {
                 <input type="checkbox" checked={task.done} onChange={() => toggleTask(task)} />
                 <span>{task.title}</span>
               </label>
-              <p>{task.description || "No description"}</p>
+              <p>{task.description || "説明なし"}</p>
               <div className="meta">
                 <span>ID: {task.id}</span>
                 <span>{task.updated_at}</span>
               </div>
-              <button className="delete" onClick={() => deleteTask(task.id)}>Delete</button>
+              <button className="delete" onClick={() => deleteTask(task.id)}>削除</button>
             </article>
           ))}
-          {tasks.length === 0 && !error && <p className="empty">No tasks yet.</p>}
+          {tasks.length === 0 && !error && <p className="empty">まだタスクはありません。</p>}
         </div>
       </section>
     </main>
