@@ -80,7 +80,7 @@ h1 {
 .oauth-actions {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 8px;
   padding-top: 4px;
 }
@@ -93,14 +93,6 @@ h1 {
 
 .oauth-button.google {
   border-color: #d9b7a8;
-}
-
-.oauth-button.github {
-  border-color: #9aa6af;
-}
-
-.oauth-button.discord {
-  border-color: #9ba8df;
 }
 
 .session-bar {
@@ -214,10 +206,6 @@ button:disabled {
 
   .auth-actions {
     flex-direction: column;
-  }
-
-  .oauth-actions {
-    grid-template-columns: 1fr;
   }
 
   .task {

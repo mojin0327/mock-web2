@@ -86,22 +86,18 @@ PATCH  /tasks/{id}  Update a task
 DELETE /tasks/{id}  Delete a task
 ```
 
-## OAuth Login
+## Google Login
 
-The frontend includes email/password login and OAuth buttons for:
+The frontend includes email/password login and Google OAuth login.
 
-- Google
-- GitHub
-- Discord
-
-Enable each provider in Supabase:
+Enable Google in Supabase:
 
 ```text
-Supabase Dashboard -> Authentication -> Providers
+Supabase Dashboard -> Authentication -> Providers -> Google
 ```
 
-Each provider needs its own OAuth client ID and client secret from that provider's developer console.
-Set the callback URL in each provider to the Supabase callback URL shown in the Supabase provider settings.
+Google login needs an OAuth client ID and client secret from Google Cloud.
+Set the Google OAuth callback URL to the Supabase callback URL shown in the Supabase Google provider settings.
 
 ## Environment Variables
 
