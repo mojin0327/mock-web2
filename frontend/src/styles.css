@@ -53,14 +53,34 @@ h1 {
   gap: 18px;
 }
 
-.task-form {
+.task-form,
+.auth-form,
+.session-bar {
   display: grid;
-  grid-template-columns: 1fr 1.4fr auto;
   gap: 10px;
   padding: 14px;
   background: #ffffff;
   border: 1px solid #ddd5c8;
   border-radius: 8px;
+}
+
+.task-form {
+  grid-template-columns: 1fr 1.4fr auto;
+}
+
+.auth-form {
+  grid-template-columns: 1fr 1fr auto;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 input {
@@ -87,6 +107,11 @@ button {
 button:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.secondary {
+  background: #eef0ea;
+  color: #1d252c;
 }
 
 .error,
@@ -156,8 +181,13 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
-  .task-form {
+  .task-form,
+  .auth-form {
     grid-template-columns: 1fr;
+  }
+
+  .auth-actions {
+    flex-direction: column;
   }
 
   .task {

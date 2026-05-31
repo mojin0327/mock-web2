@@ -1,11 +1,12 @@
 # Mock Web2
 
-React + FastAPI + PostgreSQL task management app for learning full-stack web development.
+React + FastAPI + Supabase Auth + PostgreSQL task management app for learning full-stack web development.
 
 ## Stack
 
 - Frontend: React + Vite
 - Backend: FastAPI
+- Auth: Supabase Auth
 - Database: PostgreSQL
 - Version control: Git + GitHub
 
@@ -71,6 +72,12 @@ http://localhost:5173
 
 ## API
 
+Task endpoints require a Supabase access token:
+
+```text
+Authorization: Bearer <supabase-access-token>
+```
+
 ```text
 GET    /tasks       List tasks
 POST   /tasks       Create a task
@@ -86,17 +93,22 @@ Backend variables live in `backend/.env`:
 ```text
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 FRONTEND_ORIGINS=http://localhost:5173
+SUPABASE_URL=https://your-project.supabase.co
 ```
 
 `DATABASE_URL` is required. The backend will not start without a PostgreSQL connection string.
+`SUPABASE_URL` is required so the backend can verify Supabase Auth JWTs through the project's JWKS endpoint.
 
 Frontend variables live in `frontend/.env`:
 
 ```text
 VITE_API_URL=http://localhost:8000
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 Commit `.env.example` files, but do not commit real `.env` files.
+Never put a Supabase `service_role` key in frontend code.
 
 ## Deployment Notes
 
@@ -114,6 +126,7 @@ uvicorn main:app --host 0.0.0.0 --port $PORT
 ```text
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 FRONTEND_ORIGINS=https://your-frontend-domain.example
+SUPABASE_URL=https://your-project.supabase.co
 ```
 
 
@@ -122,6 +135,8 @@ FRONTEND_ORIGINS=https://your-frontend-domain.example
 
 ```text
 VITE_API_URL=/backend
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 
