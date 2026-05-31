@@ -77,6 +77,32 @@ h1 {
   gap: 8px;
 }
 
+.oauth-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.oauth-button {
+  background: #ffffff;
+  color: #1d252c;
+  border: 1px solid #cfc5b8;
+}
+
+.oauth-button.google {
+  border-color: #d9b7a8;
+}
+
+.oauth-button.github {
+  border-color: #9aa6af;
+}
+
+.oauth-button.discord {
+  border-color: #9ba8df;
+}
+
 .session-bar {
   display: flex;
   align-items: center;
@@ -188,6 +214,10 @@ button:disabled {
 
   .auth-actions {
     flex-direction: column;
+  }
+
+  .oauth-actions {
+    grid-template-columns: 1fr;
   }
 
   .task {

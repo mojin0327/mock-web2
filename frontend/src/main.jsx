@@ -12,6 +12,12 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase =
   SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+const OAUTH_PROVIDERS = [
+  { id: "google", label: "Google" },
+  { id: "github", label: "GitHub" },
+  { id: "discord", label: "Discord" },
+];
+
 function App() {
   const [session, setSession] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
@@ -120,6 +126,25 @@ function App() {
     }
   }
 
+  async function signInWithProvider(provider) {
+    if (!supabase) return;
+    setLoading(true);
+    setError("");
+    setMessage("");
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (authError) throw authError;
+    } catch (err) {
+      setError(err.message || `${provider}ログインに失敗しました。`);
+      setLoading(false);
+    }
+  }
+
   async function signOut() {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -179,6 +204,19 @@ function App() {
             <div className="auth-actions">
               <button type="submit" disabled={loading}>ログイン</button>
               <button type="button" className="secondary" disabled={loading} onClick={signUp}>新規登録</button>
+            </div>
+            <div className="oauth-actions">
+              {OAUTH_PROVIDERS.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  className={`oauth-button ${provider.id}`}
+                  disabled={loading}
+                  onClick={() => signInWithProvider(provider.id)}
+                >
+                  {provider.label}でログイン
+                </button>
+              ))}
             </div>
           </form>
         )}

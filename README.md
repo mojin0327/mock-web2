@@ -86,6 +86,23 @@ PATCH  /tasks/{id}  Update a task
 DELETE /tasks/{id}  Delete a task
 ```
 
+## OAuth Login
+
+The frontend includes email/password login and OAuth buttons for:
+
+- Google
+- GitHub
+- Discord
+
+Enable each provider in Supabase:
+
+```text
+Supabase Dashboard -> Authentication -> Providers
+```
+
+Each provider needs its own OAuth client ID and client secret from that provider's developer console.
+Set the callback URL in each provider to the Supabase callback URL shown in the Supabase provider settings.
+
 ## Environment Variables
 
 Backend variables live in `backend/.env`:
