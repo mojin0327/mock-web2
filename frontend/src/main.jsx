@@ -27,6 +27,14 @@ function App() {
   const isAuthConfigured = Boolean(supabase);
 
   const userLabel = useMemo(() => session?.user?.email ?? "", [session]);
+  const profile = useMemo(() => {
+    const metadata = session?.user?.user_metadata ?? {};
+    const email = session?.user?.email ?? "";
+    const name = metadata.full_name || metadata.name || email || "ログイン中";
+    const avatarUrl = metadata.avatar_url || metadata.picture || "";
+    const initial = name.trim().charAt(0).toUpperCase() || "?";
+    return { avatarUrl, email, initial, name };
+  }, [session]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -218,7 +226,17 @@ function App() {
         {session && (
           <>
             <div className="session-bar">
-              <span>{userLabel}</span>
+              <div className="profile">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="" className="profile-avatar" />
+                ) : (
+                  <span className="profile-avatar fallback">{profile.initial}</span>
+                )}
+                <div>
+                  <strong>{profile.name}</strong>
+                  <span>{userLabel}</span>
+                </div>
+              </div>
               <button className="secondary" onClick={signOut}>ログアウト</button>
             </div>
 

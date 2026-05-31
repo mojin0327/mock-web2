@@ -101,6 +101,42 @@ h1 {
   justify-content: space-between;
 }
 
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-avatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eef0ea;
+}
+
+.profile-avatar.fallback {
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #376f8f;
+  font-weight: 800;
+}
+
+.profile strong,
+.profile span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.profile span {
+  margin-top: 2px;
+  color: #697782;
+  font-size: 13px;
+}
+
 input {
   width: 100%;
   border: 1px solid #cfc5b8;
