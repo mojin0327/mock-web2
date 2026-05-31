@@ -85,8 +85,11 @@ Backend variables live in `backend/.env`:
 
 ```text
 DATABASE_PATH=app.db
+DATABASE_URL=
 FRONTEND_ORIGINS=http://localhost:5173
 ```
+
+`DATABASE_URL` is optional locally. When it is empty, the backend uses SQLite. When it is set to a PostgreSQL connection string, the backend uses PostgreSQL.
 
 Frontend variables live in `frontend/.env`:
 
@@ -107,7 +110,7 @@ Recommended beginner deployment path:
 uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
 
-3. Set backend environment variables:
+3. Set backend environment variables for a demo SQLite deployment:
 
 ```text
 DATABASE_PATH=app.db
@@ -130,6 +133,13 @@ VITE_API_URL=/backend
 ```
 
 SQLite is fine for this learning project, but production apps usually use PostgreSQL or another managed database.
+
+For a PostgreSQL deployment, set this on the backend instead:
+
+```text
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+FRONTEND_ORIGINS=https://your-frontend-domain.example
+```
 
 ## Git Notes
 
