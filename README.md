@@ -86,6 +86,31 @@ PATCH  /tasks/{id}  Update a task
 DELETE /tasks/{id}  Delete a task
 ```
 
+Experimental workspace endpoints use a layered database model:
+
+```text
+GET    /workspace/items       List workspace items
+POST   /workspace/items       Create project/task/idea/log item
+GET    /workspace/items/{id}  Get one workspace item
+DELETE /workspace/items/{id}  Delete one workspace item
+```
+
+The workspace tables are split into a common layer and type-specific layers:
+
+```text
+workspace_items
+workspace_projects
+workspace_tasks
+workspace_ideas
+workspace_logs
+```
+
+Run database migrations with:
+
+```powershell
+python backend/run_migrations.py
+```
+
 ## Google Login
 
 The frontend includes email/password login and Google OAuth login.

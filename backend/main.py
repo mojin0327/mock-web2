@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Literal, Optional
 
 import jwt
 import psycopg
@@ -45,6 +45,23 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     done: Optional[bool] = None
+
+
+class WorkspaceItemCreate(BaseModel):
+    type: Literal["project", "task", "idea", "log"]
+    title: str
+    content: str = ""
+    parent_id: Optional[str] = None
+    goal: str = ""
+    budget: Optional[float] = None
+    starts_at: Optional[str] = None
+    ends_at: Optional[str] = None
+    status: Literal["todo", "doing", "done", "archived"] = "todo"
+    due_date: Optional[str] = None
+    assignee_id: Optional[str] = None
+    source: str = ""
+    score: Optional[int] = None
+    executed_at: Optional[str] = None
 
 
 def get_connection():
@@ -114,6 +131,56 @@ def task_to_dict(row):
     task = dict(row)
     task["done"] = bool(task["done"])
     return task
+
+
+def workspace_item_to_dict(row):
+    item = dict(row)
+    item["detail"] = {
+        "goal": item.pop("goal", None),
+        "budget": item.pop("budget", None),
+        "starts_at": item.pop("starts_at", None),
+        "ends_at": item.pop("ends_at", None),
+        "status": item.pop("status", None),
+        "due_date": item.pop("due_date", None),
+        "assignee_id": item.pop("assignee_id", None),
+        "source": item.pop("source", None),
+        "score": item.pop("score", None),
+        "executed_at": item.pop("executed_at", None),
+    }
+    return item
+
+
+def select_workspace_item(connection, item_id: str, user_id: str):
+    return connection.execute(
+        """
+        select
+            wi.id,
+            wi.user_id,
+            wi.type,
+            wi.title,
+            wi.content,
+            wi.parent_id,
+            wi.created_at,
+            wi.updated_at,
+            wp.goal,
+            wp.budget,
+            wp.starts_at,
+            wp.ends_at,
+            wt.status,
+            wt.due_date,
+            wt.assignee_id,
+            wid.source,
+            wid.score,
+            wl.executed_at
+        from workspace_items wi
+        left join workspace_projects wp on wp.item_id = wi.id
+        left join workspace_tasks wt on wt.item_id = wi.id
+        left join workspace_ideas wid on wid.item_id = wi.id
+        left join workspace_logs wl on wl.item_id = wi.id
+        where wi.id = %s and wi.user_id = %s
+        """,
+        (item_id, user_id),
+    ).fetchone()
 
 
 @app.get("/tasks")
@@ -214,3 +281,120 @@ def delete_task(task_id: int, user_id: str = Depends(get_current_user_id)):
             raise HTTPException(status_code=404, detail="Task not found")
         connection.execute("delete from tasks where id = %s and user_id = %s", (task_id, user_id))
     return {"deleted": True, "task": task_to_dict(row)}
+
+
+@app.get("/workspace/items")
+def list_workspace_items(user_id: str = Depends(get_current_user_id)):
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            select
+                wi.id,
+                wi.user_id,
+                wi.type,
+                wi.title,
+                wi.content,
+                wi.parent_id,
+                wi.created_at,
+                wi.updated_at,
+                wp.goal,
+                wp.budget,
+                wp.starts_at,
+                wp.ends_at,
+                wt.status,
+                wt.due_date,
+                wt.assignee_id,
+                wid.source,
+                wid.score,
+                wl.executed_at
+            from workspace_items wi
+            left join workspace_projects wp on wp.item_id = wi.id
+            left join workspace_tasks wt on wt.item_id = wi.id
+            left join workspace_ideas wid on wid.item_id = wi.id
+            left join workspace_logs wl on wl.item_id = wi.id
+            where wi.user_id = %s
+            order by wi.created_at desc
+            """,
+            (user_id,),
+        ).fetchall()
+    return [workspace_item_to_dict(row) for row in rows]
+
+
+@app.post("/workspace/items")
+def create_workspace_item(payload: WorkspaceItemCreate, user_id: str = Depends(get_current_user_id)):
+    with get_connection() as connection:
+        if payload.parent_id:
+            parent = connection.execute(
+                "select id from workspace_items where id = %s and user_id = %s",
+                (payload.parent_id, user_id),
+            ).fetchone()
+            if parent is None:
+                raise HTTPException(status_code=400, detail="parent_id does not belong to the current user")
+
+        row = connection.execute(
+            """
+            insert into workspace_items (user_id, type, title, content, parent_id)
+            values (%s, %s, %s, %s, %s)
+            returning id
+            """,
+            (user_id, payload.type, payload.title, payload.content, payload.parent_id),
+        ).fetchone()
+        item_id = row["id"]
+
+        if payload.type == "project":
+            connection.execute(
+                """
+                insert into workspace_projects (item_id, goal, budget, starts_at, ends_at)
+                values (%s, %s, %s, %s, %s)
+                """,
+                (item_id, payload.goal, payload.budget, payload.starts_at, payload.ends_at),
+            )
+        elif payload.type == "task":
+            connection.execute(
+                """
+                insert into workspace_tasks (item_id, status, due_date, assignee_id)
+                values (%s, %s, %s, %s)
+                """,
+                (item_id, payload.status, payload.due_date, payload.assignee_id),
+            )
+        elif payload.type == "idea":
+            connection.execute(
+                """
+                insert into workspace_ideas (item_id, source, score)
+                values (%s, %s, %s)
+                """,
+                (item_id, payload.source, payload.score),
+            )
+        elif payload.type == "log":
+            if payload.executed_at:
+                connection.execute(
+                    """
+                    insert into workspace_logs (item_id, executed_at)
+                    values (%s, %s)
+                    """,
+                    (item_id, payload.executed_at),
+                )
+            else:
+                connection.execute("insert into workspace_logs (item_id) values (%s)", (item_id,))
+
+        created = select_workspace_item(connection, item_id, user_id)
+    return workspace_item_to_dict(created)
+
+
+@app.get("/workspace/items/{item_id}")
+def get_workspace_item(item_id: str, user_id: str = Depends(get_current_user_id)):
+    with get_connection() as connection:
+        row = select_workspace_item(connection, item_id, user_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Workspace item not found")
+    return workspace_item_to_dict(row)
+
+
+@app.delete("/workspace/items/{item_id}")
+def delete_workspace_item(item_id: str, user_id: str = Depends(get_current_user_id)):
+    with get_connection() as connection:
+        row = select_workspace_item(connection, item_id, user_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail="Workspace item not found")
+        connection.execute("delete from workspace_items where id = %s and user_id = %s", (item_id, user_id))
+    return {"deleted": True, "item": workspace_item_to_dict(row)}
