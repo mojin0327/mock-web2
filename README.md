@@ -105,6 +105,8 @@ workspace_ideas
 workspace_logs
 ```
 
+Task items are linked with the existing `tasks` table, so authenticated tasks appear in both the classic task view and the workspace experiment view.
+
 Run database migrations with:
 
 ```powershell

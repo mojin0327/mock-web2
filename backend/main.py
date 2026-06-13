@@ -130,6 +130,7 @@ def health():
 def task_to_dict(row):
     task = dict(row)
     task["done"] = bool(task["done"])
+    task.pop("user_id", None)
     return task
 
 
@@ -160,6 +161,7 @@ def select_workspace_item(connection, item_id: str, user_id: str):
             wi.title,
             wi.content,
             wi.parent_id,
+            wi.legacy_task_id,
             wi.created_at,
             wi.updated_at,
             wp.goal,
@@ -181,6 +183,76 @@ def select_workspace_item(connection, item_id: str, user_id: str):
         """,
         (item_id, user_id),
     ).fetchone()
+
+
+def create_workspace_task_from_task(connection, task_row):
+    existing = connection.execute(
+        "select id from workspace_items where legacy_task_id = %s and user_id = %s",
+        (task_row["id"], task_row["user_id"]),
+    ).fetchone()
+    if existing is not None:
+        return existing["id"]
+
+    item = connection.execute(
+        """
+        insert into workspace_items (user_id, type, title, content, legacy_task_id, created_at, updated_at)
+        values (%s, 'task', %s, %s, %s, %s, %s)
+        returning id
+        """,
+        (
+            task_row["user_id"],
+            task_row["title"],
+            task_row["description"],
+            task_row["id"],
+            task_row["created_at"],
+            task_row["updated_at"],
+        ),
+    ).fetchone()
+    connection.execute(
+        """
+        insert into workspace_tasks (item_id, status)
+        values (%s, %s)
+        """,
+        (item["id"], "done" if task_row["done"] else "todo"),
+    )
+    return item["id"]
+
+
+def update_workspace_task_from_task(connection, task_row):
+    workspace_item = connection.execute(
+        """
+        select id
+        from workspace_items
+        where legacy_task_id = %s and user_id = %s
+        """,
+        (task_row["id"], task_row["user_id"]),
+    ).fetchone()
+    if workspace_item is None:
+        create_workspace_task_from_task(connection, task_row)
+        return
+
+    connection.execute(
+        """
+        update workspace_items
+        set title = %s, content = %s, updated_at = %s
+        where id = %s and user_id = %s
+        """,
+        (
+            task_row["title"],
+            task_row["description"],
+            task_row["updated_at"],
+            workspace_item["id"],
+            task_row["user_id"],
+        ),
+    )
+    connection.execute(
+        """
+        update workspace_tasks
+        set status = %s
+        where item_id = %s
+        """,
+        ("done" if task_row["done"] else "todo", workspace_item["id"]),
+    )
 
 
 @app.get("/tasks")
@@ -205,10 +277,11 @@ def create_task(payload: TaskCreate, user_id: str = Depends(get_current_user_id)
             """
             insert into tasks (user_id, title, description)
             values (%s, %s, %s)
-            returning id, title, description, done, created_at, updated_at
+            returning id, user_id, title, description, done, created_at, updated_at
             """,
             (user_id, payload.title, payload.description),
         ).fetchone()
+        create_workspace_task_from_task(connection, row)
     return task_to_dict(row)
 
 
@@ -217,7 +290,7 @@ def get_task(task_id: int, user_id: str = Depends(get_current_user_id)):
     with get_connection() as connection:
         row = connection.execute(
             """
-            select id, title, description, done, created_at, updated_at
+            select id, user_id, title, description, done, created_at, updated_at
             from tasks
             where id = %s and user_id = %s
             """,
@@ -257,12 +330,13 @@ def update_task(task_id: int, payload: TaskUpdate, user_id: str = Depends(get_cu
         )
         row = connection.execute(
             """
-            select id, title, description, done, created_at, updated_at
+            select id, user_id, title, description, done, created_at, updated_at
             from tasks
             where id = %s and user_id = %s
             """,
             (task_id, user_id),
         ).fetchone()
+        update_workspace_task_from_task(connection, row)
     return task_to_dict(row)
 
 
@@ -279,6 +353,10 @@ def delete_task(task_id: int, user_id: str = Depends(get_current_user_id)):
         ).fetchone()
         if row is None:
             raise HTTPException(status_code=404, detail="Task not found")
+        connection.execute(
+            "delete from workspace_items where legacy_task_id = %s and user_id = %s",
+            (task_id, user_id),
+        )
         connection.execute("delete from tasks where id = %s and user_id = %s", (task_id, user_id))
     return {"deleted": True, "task": task_to_dict(row)}
 
@@ -295,6 +373,7 @@ def list_workspace_items(user_id: str = Depends(get_current_user_id)):
                 wi.title,
                 wi.content,
                 wi.parent_id,
+                wi.legacy_task_id,
                 wi.created_at,
                 wi.updated_at,
                 wp.goal,
@@ -331,13 +410,25 @@ def create_workspace_item(payload: WorkspaceItemCreate, user_id: str = Depends(g
             if parent is None:
                 raise HTTPException(status_code=400, detail="parent_id does not belong to the current user")
 
+        legacy_task_id = None
+        if payload.type == "task":
+            task_row = connection.execute(
+                """
+                insert into tasks (user_id, title, description, done)
+                values (%s, %s, %s, %s)
+                returning id
+                """,
+                (user_id, payload.title, payload.content, payload.status == "done"),
+            ).fetchone()
+            legacy_task_id = task_row["id"]
+
         row = connection.execute(
             """
-            insert into workspace_items (user_id, type, title, content, parent_id)
-            values (%s, %s, %s, %s, %s)
+            insert into workspace_items (user_id, type, title, content, parent_id, legacy_task_id)
+            values (%s, %s, %s, %s, %s, %s)
             returning id
             """,
-            (user_id, payload.type, payload.title, payload.content, payload.parent_id),
+            (user_id, payload.type, payload.title, payload.content, payload.parent_id, legacy_task_id),
         ).fetchone()
         item_id = row["id"]
 
@@ -396,5 +487,10 @@ def delete_workspace_item(item_id: str, user_id: str = Depends(get_current_user_
         row = select_workspace_item(connection, item_id, user_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Workspace item not found")
+        if row.get("type") == "task" and row.get("legacy_task_id"):
+            connection.execute(
+                "delete from tasks where id = %s and user_id = %s",
+                (row["legacy_task_id"], user_id),
+            )
         connection.execute("delete from workspace_items where id = %s and user_id = %s", (item_id, user_id))
     return {"deleted": True, "item": workspace_item_to_dict(row)}
