@@ -10,7 +10,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -54,6 +55,7 @@ h1 {
 }
 
 .task-form,
+.workspace-form,
 .auth-form,
 .session-bar {
   display: grid;
@@ -68,8 +70,27 @@ h1 {
   grid-template-columns: 1fr 1.4fr auto;
 }
 
+.workspace-form {
+  grid-template-columns: 140px 1fr 1.2fr;
+}
+
 .auth-form {
   grid-template-columns: 1fr 1fr auto;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.view-tabs button {
+  background: #eef0ea;
+  color: #1d252c;
+}
+
+.view-tabs button.active {
+  background: #1d252c;
+  color: #ffffff;
 }
 
 .auth-actions {
@@ -137,7 +158,8 @@ h1 {
   font-size: 13px;
 }
 
-input {
+input,
+select {
   width: 100%;
   border: 1px solid #cfc5b8;
   border-radius: 6px;
@@ -145,7 +167,8 @@ input {
   outline: none;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #376f8f;
 }
 
@@ -218,6 +241,36 @@ button:disabled {
   color: #697782;
 }
 
+.workspace-item label {
+  align-items: flex-start;
+}
+
+.type-badge {
+  min-width: 66px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #eef0ea;
+  color: #1d252c;
+  font-size: 12px;
+  text-align: center;
+}
+
+.type-badge.project {
+  background: #e3f0e6;
+}
+
+.type-badge.task {
+  background: #e4edf4;
+}
+
+.type-badge.idea {
+  background: #f4ebd7;
+}
+
+.type-badge.log {
+  background: #f2e1df;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -236,6 +289,7 @@ button:disabled {
 
 @media (max-width: 720px) {
   .task-form,
+  .workspace-form,
   .auth-form {
     grid-template-columns: 1fr;
   }
